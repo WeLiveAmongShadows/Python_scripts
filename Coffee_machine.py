@@ -1,3 +1,8 @@
+"""
+☕ Coffee Machine ☕
+"""
+
+#This dictionary contains the detailed ingredients and cost for each coffee
 menu = {
 
     "espresso": {
@@ -50,6 +55,7 @@ menu = {
 
 }
 
+#This dictionary contains the detailed resources of the machine 
 Resources = {
     "water" : 500,
     "milk" : 500,
@@ -219,5 +225,5 @@ while Resources["water"] > 0: #The machine stays on when has some water
 
 
 """
-Developed by Samuel Ortiz 💫
+💫 Developed by Samuel Ortiz 💫
 """
