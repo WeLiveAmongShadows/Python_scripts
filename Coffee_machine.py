@@ -214,3 +214,10 @@ while Resources["water"] > 0: #The machine stays on when has some water
             else:
                 print("The machine has been turned off")
                 exit()
+
+
+
+
+"""
+Developed by Samuel Ortiz 💫
+"""
