@@ -1,0 +1,17 @@
+import mysql.connector
+
+my_db = mysql.connector.connect(
+  host="sql9.freesqldatabase.com",
+  user="sql9586980",
+  password="U2sevnGsHp",
+  database="sql9586980"
+)
+
+mycursor = my_db.cursor()
+
+mycursor.execute("select * from sql9586980")
+
+myresult = mycursor.fetchall()
+
+for x in myresult:
+  print(x)
