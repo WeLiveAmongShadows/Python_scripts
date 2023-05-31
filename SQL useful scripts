@@ -1,0 +1,183 @@
+
+💡 Usefull Statements 💡
+
+
+=================================================================================================================
+
+    • Get all schemas from a DB.
+        select
+        *
+        from sys.schemas
+
+=================================================================================================================
+
+    • Get all tables from a schema and count of records.
+        use [RD Einstein DWH]
+        go
+
+        select
+        DB_NAME() as DB_name,
+        [s].[name] as [Schema_name],
+        [t].[name] as [Table_name],
+        [p].[rows] as [records]
+        from [sys].[tables] as [t]
+            left join [sys].[schemas] as [s]
+                on [s].[schema_id] = [t].[schema_id]
+            inner join [sys].[partitions] as [p]
+                on [p].[object_id] = [t].[object_id]
+        where
+            [s].[name] = 'tpago' and
+            [t].[name] like '%padron%'
+        order by [t].[name]
+
+
+=================================================================================================================
+
+    • Count & group by
+        select
+        SubTrxTypeCode,
+        count(SubTrxTypeCode) as count
+        from [RD Einstein STAGE].[dbo].[Transactional_tPago_FinalStage]
+        group by SubTrxTypeCode
+        order by count(SubTrxTypeCode)
+
+=================================================================================================================
+
+    • ServiceTypesEvaluation table
+        use [RD Einstein DWH]
+        go
+        
+        select
+            [tpago].[SubTrxTypes].[SubTrxTypeCode],
+            [tpago].[SubTrxTypes].[SubTrxTypeName],
+            [tpago].[TrxTypes].[TrxTypeId],
+            [tpago].[TrxTypes].[TrxTypeName],
+            [tpago].[ServiceTypes].[ServiceId],
+            [tpago].[ServiceTypes].[ServiceDescDisplay]
+        from [tpago].[SubTrxTypes]
+        left join [tpago].[TrxTypes] on [tpago].[TrxTypes].[TrxTypeId] = [tpago].[SubTrxTypes].[TrxTypeId]
+        left join [tpago].[ServiceTypes] on [tpago].[TrxTypes].[TrxTypeId] = [tpago].[ServiceTypes].[TrxTypeId]
+
+=================================================================================================================
+
+    • Get all rows from a table rouped by Month for a specific year
+    use [RD Einstein STAGE]
+    go
+
+        use [RD Einstein STAGE]
+        go
+
+
+        select
+            year([x].[TransactionDate]) as [Year],
+            month([x].[TransactionDate]) as [Month],
+            count([x].[TransactionDate]) as [Total rows]
+        from [dbo].[Transactional_tPago_FinalStage] as [x]
+        where year([x].[TransactionDate]) in('2020', '2021', '2022', '2023')
+        group by 
+            month([x].[TransactionDate]),
+            year([x].[TransactionDate])
+        order by [Year], [Month]
+
+=================================================================================================================
+
+    • SSMS Query performance
+        set statistics io on --Above select statement
+
+=================================================================================================================
+
+    • Get all columns from a table
+
+        use [RD Einstein DWH]
+        go
+
+        select
+            [x].[COLUMN_NAME] as Column_
+        from [INFORMATION_SCHEMA].[columns] as [x]
+        where
+            [x].[TABLE_SCHEMA] = 'tpago' and
+            [x].[TABLE_NAME] = 'TrxTypes'
+=================================================================================================================
+
+    • View ependencies of tables and Stored Procedures
+
+        use [RD Einstein DWH]
+        go
+
+        select
+            [x].[referenced_schema_name] as 'Schema',
+            [x].[referenced_entity_name] as 'Table',
+            [x].[referenced_id] as 'Table ID',
+            [y].[name] as 'Procedure Name',
+            [x].[referencing_id] as 'Procedure Id'
+        from [sys].[sql_expression_dependencies] as [x]
+        left join [sys].[procedures] as [y] on [x].[referencing_id] = [y].[object_id]
+        where
+            [x].[referenced_schema_name] = 'tpago' and
+            [x].[referenced_id] is not null and
+            [y].[name] is not null
+        order by [x].[referenced_entity_name]
+
+=================================================================================================================
+
+    • Get all Foreign Keys for specific table
+
+        use [RD Einstein DWH]
+        go
+
+        SELECT  obj.name AS FK_NAME,
+            sch.name AS [schema_name],
+            tab1.name AS [table],
+            col1.name AS [column],
+            tab2.name AS [referenced_table],
+            col2.name AS [referenced_column]
+        FROM sys.foreign_key_columns fkc
+        INNER JOIN sys.objects obj
+            ON obj.object_id = fkc.constraint_object_id
+        INNER JOIN sys.tables tab1
+            ON tab1.object_id = fkc.parent_object_id
+        INNER JOIN sys.schemas sch
+            ON tab1.schema_id = sch.schema_id
+        INNER JOIN sys.columns col1
+            ON col1.column_id = parent_column_id AND col1.object_id = tab1.object_id
+        INNER JOIN sys.tables tab2
+            ON tab2.object_id = fkc.referenced_object_id
+        INNER JOIN sys.columns col2
+            ON col2.column_id = referenced_column_id AND col2.object_id = tab2.object_id
+
+        where [tab1].[name] in('facttransactions', 'factwalletmov')
+        order by [tab1].[name], [obj].[name]
+
+=================================================================================================================
+
+    • Used space in DB by tables
+        SELECT DB_NAME(database_id) AS database_name, 
+        type_desc,
+        name AS FileName, 
+        size/128000.0 AS CurrentSize_GB
+        FROM sys.master_files
+        where DB_NAME(database_id) in ('RD Einstein STAGE', 'RD Einstein DWH')
+
+=================================================================================================================
+
+    • Last execution time of a stored procedure
+        use [Einstein DWH]
+        go
+
+
+        SELECT
+            OBJECT_NAME(1200723330) AS 'Stored Procedure',
+            *
+        FROM
+            sys.dm_exec_procedure_stats
+        WHERE
+            OBJECT_NAME(1200723330) = 'monthly_projection_affiliation'
+        order by last_execution_time
+
+
+        --select * from sys.procedures
+        --where name = 'monthly_projection_affiliation'
+
+=================================================================================================================
+
+
